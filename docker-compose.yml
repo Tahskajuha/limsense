@@ -1,14 +1,36 @@
-db:
-  build:
-    context: ./schema
-    dockerfile: Dockerfile
-    args:
-      USER: ${DBUSERNAME}
-      PWD: ${DBPWD}
+services:
+  db:
+    build:
+      context: ./dbSchema
+      dockerfile: Dockerfile
+      args:
+        USER: ${DBUSERNAME}
+        PWD: ${DBPWD}
+        NAME: ${DBNAME}
+        PORT: ${DBPORT}
+    container_name: db
+    volumes:
+      - dbData:/var/lib/postgresql/data
+    command: ["postgres", "-c", "port=${DBPORT}"]
+    restart: unless-stopped
+
+  backend:
+    environment:
+      DBUSER: ${DBUSERNAME}
+      DBPWD: ${DBPWD}
       NAME: ${DBNAME}
       PORT: ${DBPORT}
-  container_name: db
-  volumes:
-    - dbData:/var/lib/postgresql/data
-  command: ["postgres", "-c", "port=${DBPORT}"]
-  restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    depends_on:
+      - db
+    volumes:
+      - ./backend/package.json:/app/package.json
+    command: >
+      sh -c "npm install && sh waitFor.sh db ${DBPORT} node index.js"
+    restart: unless-stopped
+
+volumes:
+  dbData:
