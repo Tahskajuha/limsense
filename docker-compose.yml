@@ -1,0 +1,14 @@
+db:
+  build:
+    context: ./schema
+    dockerfile: Dockerfile
+    args:
+      USER: ${DBUSERNAME}
+      PWD: ${DBPWD}
+      NAME: ${DBNAME}
+      PORT: ${DBPORT}
+  container_name: db
+  volumes:
+    - dbData:/var/lib/postgresql/data
+  command: ["postgres", "-c", "port=${DBPORT}"]
+  restart: unless-stopped
