@@ -28,6 +28,8 @@ services:
       - db
     volumes:
       - ./backend/package.json:/app/package.json
+    # command: > # test
+    #   sh -c "npm install"
     command: >
       sh -c "npm install && sh waitFor.sh db ${DBPORT} node index.js"
     restart: unless-stopped
